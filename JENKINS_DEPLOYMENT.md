@@ -82,6 +82,17 @@ Go to **Manage Jenkins** → **Global Tool Configuration**:
    - Backend: http://localhost:8081/hello
    - Frontend: http://localhost:3000
 
+   If those URLs don’t load while Jenkins runs in Docker:
+   - They are running inside the Jenkins container network. Expose the ports from the container to your host.
+
+   Expose ports 8081 and 3000 on the Jenkins container (PowerShell):
+   ```powershell
+   docker stop Jenkins; docker rm Jenkins
+   docker run -d --name Jenkins -p 8080:8080 -p 50000:50000 -p 8081:8081 -p 3000:3000 `
+      --restart unless-stopped -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts
+   ```
+   After recreating, re-run the pipeline; services started by Jenkins will be reachable on localhost.
+
 ## Troubleshooting
 
 ### Jenkins can't find Maven/NodeJS
