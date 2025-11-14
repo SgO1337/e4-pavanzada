@@ -15,8 +15,8 @@ pipeline {
     environment {
         BACKEND_DIR = 'backend'
         FRONTEND_DIR = 'frontend'
-        BACKEND_PORT = '8081'
-        FRONTEND_PORT = '3000'
+        BACKEND_PORT = '8082'
+        FRONTEND_PORT = '3001'
     }
     
     stages {
@@ -76,7 +76,7 @@ pipeline {
                 echo 'Deploying backend Docker container...'
                 script {
                     sh "docker rm -f e4-backend || true"
-                    sh "docker run -d --name e4-backend -p 8081:8081 e4-backend:latest"
+                    sh "docker run -d --name e4-backend -p ${BACKEND_PORT}:8081 e4-backend:latest"
                 }
             }
         }
@@ -96,7 +96,7 @@ pipeline {
                 echo 'Deploying frontend Docker container...'
                 script {
                     sh "docker rm -f e4-frontend || true"
-                    sh "docker run -d --name e4-frontend -p 3000:3000 e4-frontend:latest"
+                    sh "docker run -d --name e4-frontend -p ${FRONTEND_PORT}:3000 e4-frontend:latest"
                 }
             }
         }
@@ -105,8 +105,8 @@ pipeline {
     post {
         success {
             echo 'Pipeline completed successfully!'
-            echo 'Backend is running on http://localhost:8081'
-            echo 'Frontend is running on http://localhost:3000'
+            echo "Backend is running on http://localhost:${BACKEND_PORT}"
+            echo "Frontend is running on http://localhost:${FRONTEND_PORT}"
             // Archive build artifacts so Jenkins keeps them with the run
             archiveArtifacts artifacts: "${BACKEND_DIR}/target/*.jar", fingerprint: true
             archiveArtifacts artifacts: "${FRONTEND_DIR}/.next/**", allowEmptyArchive: true, fingerprint: true
