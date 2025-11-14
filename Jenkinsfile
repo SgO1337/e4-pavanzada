@@ -1,6 +1,12 @@
 pipeline {
     agent any
     
+    // Trigger on GitHub push (requires GitHub plugin) and as a fallback poll SCM every 5 minutes
+    triggers {
+        githubPush()
+        pollSCM('H/5 * * * *')
+    }
+    
     tools {
         maven 'Maven'
         nodejs 'NodeJS'
@@ -42,10 +48,10 @@ pipeline {
                 dir("${FRONTEND_DIR}") {
                     script {
                         if (isUnix()) {
-                            sh 'npm install'
+                            sh 'npm ci'
                             sh 'npm run build'
                         } else {
-                            bat 'npm install'
+                            bat 'npm ci'
                             bat 'npm run build'
                         }
                     }
@@ -113,6 +119,9 @@ pipeline {
             echo 'Pipeline completed successfully!'
             echo 'Backend is running on http://localhost:8081'
             echo 'Frontend is running on http://localhost:3000'
+            // Archive build artifacts so Jenkins keeps them with the run
+            archiveArtifacts artifacts: '${BACKEND_DIR}/target/*.jar', fingerprint: true
+            archiveArtifacts artifacts: '${FRONTEND_DIR}/.next/**', allowEmptyArchive: true, fingerprint: true
         }
         failure {
             echo 'Pipeline failed!'
