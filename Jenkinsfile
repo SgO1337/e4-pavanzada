@@ -48,10 +48,12 @@ pipeline {
                 dir("${FRONTEND_DIR}") {
                     script {
                         if (isUnix()) {
-                            sh 'npm ci'
+                            // Use npm install because repo has no package-lock.json
+                            sh 'npm install'
                             sh 'npm run build'
                         } else {
-                            bat 'npm ci'
+                            rem Use npm install because repo has no package-lock.json
+                            bat 'npm install'
                             bat 'npm run build'
                         }
                     }
@@ -75,10 +77,10 @@ pipeline {
                         } else {
                             bat '''
                                 @echo off
-                                REM Kill existing backend process if running
-                                for /f "tokens=5" %%a in ('netstat -aon ^| find ":8081" ^| find "LISTENING"') do taskkill /F /PID %%a 2>nul
-                                REM Start backend in background
-                                start /B java -jar target\\backend-0.0.1-SNAPSHOT.jar --server.port=%BACKEND_PORT%
+                                REM Kill existing backend process if running on configured port
+                                for /f "tokens=5" %%a in ('netstat -aon ^| find ":%BACKEND_PORT%" ^| find "LISTENING"') do taskkill /F /PID %%a 2>nul
+                                REM Start backend in background on configured port and bind to all interfaces
+                                start /B java -jar target\\backend-0.0.1-SNAPSHOT.jar --server.port=%BACKEND_PORT% --server.address=0.0.0.0
                             '''
                         }
                     }
@@ -102,10 +104,10 @@ pipeline {
                         } else {
                             bat '''
                                 @echo off
-                                REM Kill existing frontend process if running
-                                for /f "tokens=5" %%a in ('netstat -aon ^| find ":3000" ^| find "LISTENING"') do taskkill /F /PID %%a 2>nul
-                                REM Start frontend in background
-                                start /B npm start
+                                REM Kill existing frontend process if running on configured port
+                                for /f "tokens=5" %%a in ('netstat -aon ^| find ":%FRONTEND_PORT%" ^| find "LISTENING"') do taskkill /F /PID %%a 2>nul
+                                REM Start frontend in background on configured port and bind to all interfaces
+                                start /B cmd /c "npm run start -- -p %FRONTEND_PORT% -H 0.0.0.0"
                             '''
                         }
                     }
@@ -120,8 +122,8 @@ pipeline {
             echo 'Backend is running on http://localhost:8081'
             echo 'Frontend is running on http://localhost:3000'
             // Archive build artifacts so Jenkins keeps them with the run
-            archiveArtifacts artifacts: '${BACKEND_DIR}/target/*.jar', fingerprint: true
-            archiveArtifacts artifacts: '${FRONTEND_DIR}/.next/**', allowEmptyArchive: true, fingerprint: true
+            archiveArtifacts artifacts: "${BACKEND_DIR}/target/*.jar", fingerprint: true
+            archiveArtifacts artifacts: "${FRONTEND_DIR}/.next/**", allowEmptyArchive: true, fingerprint: true
         }
         failure {
             echo 'Pipeline failed!'
