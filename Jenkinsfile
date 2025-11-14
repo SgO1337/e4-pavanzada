@@ -70,9 +70,10 @@ pipeline {
                             sh '''
                                 # Kill existing backend process if running
                                 pkill -f 'backend-0.0.1-SNAPSHOT.jar' || true
-                                # Start backend in background
-                                nohup java -jar target/backend-0.0.1-SNAPSHOT.jar --server.port=${BACKEND_PORT} --server.address=0.0.0.0 > backend.log 2>&1 &
+                                # Start backend in background with proper daemonization
+                                BUILD_ID=dontKillMe nohup java -jar target/backend-0.0.1-SNAPSHOT.jar --server.port=${BACKEND_PORT} --server.address=0.0.0.0 > backend.log 2>&1 &
                                 echo $! > backend.pid
+                                sleep 2
                             '''
                         } else {
                             bat '''
@@ -97,9 +98,10 @@ pipeline {
                             sh '''
                                 # Kill existing frontend process if running
                                 pkill -f 'next start' || true
-                                # Start frontend in background
-                                nohup npm run start -- -p ${FRONTEND_PORT} -H 0.0.0.0 > frontend.log 2>&1 &
+                                # Start frontend in background with proper daemonization
+                                BUILD_ID=dontKillMe nohup npm run start -- -p ${FRONTEND_PORT} -H 0.0.0.0 > frontend.log 2>&1 &
                                 echo $! > frontend.pid
+                                sleep 2
                             '''
                         } else {
                             bat '''
