@@ -52,7 +52,7 @@ pipeline {
                             sh 'npm install'
                             sh 'npm run build'
                         } else {
-                            rem Use npm install because repo has no package-lock.json
+                            // Use npm install because repo has no package-lock.json
                             bat 'npm install'
                             bat 'npm run build'
                         }
