@@ -70,10 +70,17 @@ pipeline {
                             sh '''
                                 # Kill existing backend process if running
                                 pkill -f 'backend-0.0.1-SNAPSHOT.jar' || true
-                                # Start backend in background with proper daemonization
-                                BUILD_ID=dontKillMe nohup java -jar target/backend-0.0.1-SNAPSHOT.jar --server.port=${BACKEND_PORT} --server.address=0.0.0.0 > backend.log 2>&1 &
+                                # Start backend in background with full daemonization using setsid
+                                setsid nohup java -jar target/backend-0.0.1-SNAPSHOT.jar --server.port=${BACKEND_PORT} --server.address=0.0.0.0 > backend.log 2>&1 < /dev/null &
                                 echo $! > backend.pid
-                                sleep 2
+                                sleep 3
+                                # Verify the process is running
+                                if pgrep -f 'backend-0.0.1-SNAPSHOT.jar' > /dev/null; then
+                                    echo "Backend started successfully on port ${BACKEND_PORT}"
+                                else
+                                    echo "WARNING: Backend process may not be running"
+                                    tail -10 backend.log
+                                fi
                             '''
                         } else {
                             bat '''
@@ -98,10 +105,17 @@ pipeline {
                             sh '''
                                 # Kill existing frontend process if running
                                 pkill -f 'next start' || true
-                                # Start frontend in background with proper daemonization
-                                BUILD_ID=dontKillMe nohup npm run start -- -p ${FRONTEND_PORT} -H 0.0.0.0 > frontend.log 2>&1 &
+                                # Start frontend in background with full daemonization using setsid
+                                setsid nohup npm run start -- -p ${FRONTEND_PORT} -H 0.0.0.0 > frontend.log 2>&1 < /dev/null &
                                 echo $! > frontend.pid
-                                sleep 2
+                                sleep 3
+                                # Verify the process is running
+                                if pgrep -f 'next start' > /dev/null; then
+                                    echo "Frontend started successfully on port ${FRONTEND_PORT}"
+                                else
+                                    echo "WARNING: Frontend process may not be running"
+                                    tail -10 frontend.log
+                                fi
                             '''
                         } else {
                             bat '''
