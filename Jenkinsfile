@@ -61,72 +61,42 @@ pipeline {
             }
         }
         
-        stage('Deploy Backend') {
+        stage('Build Backend Docker Image') {
             steps {
-                echo 'Deploying Spring Boot backend...'
+                echo 'Building backend Docker image...'
                 dir("${BACKEND_DIR}") {
                     script {
-                        if (isUnix()) {
-                            sh '''
-                                # Kill existing backend process if running
-                                pkill -f 'backend-0.0.1-SNAPSHOT.jar' || true
-                                # Start backend in background with full daemonization using setsid
-                                setsid nohup java -jar target/backend-0.0.1-SNAPSHOT.jar --server.port=${BACKEND_PORT} --server.address=0.0.0.0 > backend.log 2>&1 < /dev/null &
-                                echo $! > backend.pid
-                                sleep 3
-                                # Verify the process is running
-                                if pgrep -f 'backend-0.0.1-SNAPSHOT.jar' > /dev/null; then
-                                    echo "Backend started successfully on port ${BACKEND_PORT}"
-                                else
-                                    echo "WARNING: Backend process may not be running"
-                                    tail -10 backend.log
-                                fi
-                            '''
-                        } else {
-                            bat '''
-                                @echo off
-                                REM Kill existing backend process if running on configured port
-                                for /f "tokens=5" %%a in ('netstat -aon ^| find ":%BACKEND_PORT%" ^| find "LISTENING"') do taskkill /F /PID %%a 2>nul
-                                REM Start backend in background on configured port and bind to all interfaces
-                                start /B java -jar target\\backend-0.0.1-SNAPSHOT.jar --server.port=%BACKEND_PORT% --server.address=0.0.0.0
-                            '''
-                        }
+                        sh "docker build -t e4-backend:latest ."
                     }
                 }
             }
         }
-        
-        stage('Deploy Frontend') {
+        stage('Deploy Backend Container') {
             steps {
-                echo 'Deploying Next.js frontend...'
+                echo 'Deploying backend Docker container...'
+                script {
+                    sh "docker rm -f e4-backend || true"
+                    sh "docker run -d --name e4-backend -p 8081:8081 e4-backend:latest"
+                }
+            }
+        }
+        
+        stage('Build Frontend Docker Image') {
+            steps {
+                echo 'Building frontend Docker image...'
                 dir("${FRONTEND_DIR}") {
                     script {
-                        if (isUnix()) {
-                            sh '''
-                                # Kill existing frontend process if running
-                                pkill -f 'next start' || true
-                                # Start frontend in background with full daemonization using setsid
-                                setsid nohup npm run start -- -p ${FRONTEND_PORT} -H 0.0.0.0 > frontend.log 2>&1 < /dev/null &
-                                echo $! > frontend.pid
-                                sleep 3
-                                # Verify the process is running
-                                if pgrep -f 'next start' > /dev/null; then
-                                    echo "Frontend started successfully on port ${FRONTEND_PORT}"
-                                else
-                                    echo "WARNING: Frontend process may not be running"
-                                    tail -10 frontend.log
-                                fi
-                            '''
-                        } else {
-                            bat '''
-                                @echo off
-                                REM Kill existing frontend process if running on configured port
-                                for /f "tokens=5" %%a in ('netstat -aon ^| find ":%FRONTEND_PORT%" ^| find "LISTENING"') do taskkill /F /PID %%a 2>nul
-                                REM Start frontend in background on configured port and bind to all interfaces
-                                start /B cmd /c "npm run start -- -p %FRONTEND_PORT% -H 0.0.0.0"
-                            '''
-                        }
+                        sh "docker build -t e4-frontend:latest ."
                     }
+                }
+            }
+        }
+        stage('Deploy Frontend Container') {
+            steps {
+                echo 'Deploying frontend Docker container...'
+                script {
+                    sh "docker rm -f e4-frontend || true"
+                    sh "docker run -d --name e4-frontend -p 3000:3000 e4-frontend:latest"
                 }
             }
         }
