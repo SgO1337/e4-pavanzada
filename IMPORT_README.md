@@ -1,6 +1,6 @@
-# 📦 Guía de Exportación e Importación de Docker
+# 📦 Guía de Exportación e Importación de Jenkins
 
-Esta guía te permite exportar toda tu configuración de Docker (Jenkins, Backend, Frontend) con todos los datos, volúmenes y configuraciones de puertos para transferirla a otra PC.
+Esta guía te permite exportar tu instalación completa de Jenkins con todos los datos, jobs, plugins y configuraciones para transferirla a otra PC.
 
 ---
 
@@ -14,32 +14,24 @@ Esta guía te permite exportar toda tu configuración de Docker (Jenkins, Backen
 
 Este script exportará:
 - ✅ **Imagen de Jenkins** (jenkins/jenkins:2.528.2-lts-jdk21)
-- ✅ **Imagen del Backend** (e4-backend:latest)
-- ✅ **Imagen del Frontend** (e4-frontend:latest)
-- ✅ **Datos de Jenkins** (jobs, plugins, configuración)
-- ✅ **Base de datos H2** (usuarios y videos)
-- ✅ **Configuración de puertos** (8080, 8081, 8082, 3001, 50000, 3000)
+- ✅ **Datos de Jenkins** (jobs, plugins, configuración, credenciales)
+- ✅ **Historial de builds**
+- ✅ **Configuración de puertos** (8080, 8081, 50000, 3000)
 
 ### 2. Resultado
 
 Se creará una carpeta `docker-export/` con:
 ```
 docker-export/
-├── jenkins-image.tar           # Imagen de Jenkins
-├── e4-backend-image.tar        # Imagen del backend
-├── e4-frontend-image.tar       # Imagen del frontend
-├── jenkins-home.tar.gz         # Datos de Jenkins (jobs, plugins, etc)
-├── backend-data.tar.gz         # Base de datos H2 con usuarios y videos
-├── config.json                 # Configuración de puertos y volúmenes
-└── EXPORT_INFO.txt            # Información de la exportación
+├── jenkins-image.tar           # Imagen de Jenkins (~500-800 MB)
+├── jenkins-home.tar.gz         # Todos los datos de Jenkins
+└── config.json                 # Configuración de puertos
 ```
 
 ### 3. Tamaño aproximado
 
-- Jenkins: ~500-800 MB
-- Backend: ~200-300 MB
-- Frontend: ~150-250 MB
-- Datos: Variable (depende de cuántos videos/usuarios tengas)
+- Jenkins imagen: ~500-800 MB
+- Jenkins datos: Variable (depende de cuántos jobs y builds tengas)
 - **Total: ~1-2 GB**
 
 ---
@@ -63,10 +55,7 @@ Estructura de archivos:
 C:\ruta\tu\proyecto\
 ├── docker-export/
 │   ├── jenkins-image.tar
-│   ├── e4-backend-image.tar
-│   ├── e4-frontend-image.tar
 │   ├── jenkins-home.tar.gz
-│   ├── backend-data.tar.gz
 │   └── config.json
 └── import-docker.ps1
 ```
@@ -78,56 +67,46 @@ C:\ruta\tu\proyecto\
 ```
 
 El script automáticamente:
-1. Cargará las imágenes Docker
-2. Creará los volúmenes necesarios
+1. Cargará la imagen de Jenkins
+2. Creará el volumen necesario
 3. Restaurará todos los datos
-4. Configurará los contenedores con los puertos correctos
+4. Configurará el contenedor con los puertos correctos
 5. Instalará y configurará Docker CLI en Jenkins
-6. Iniciará todos los servicios
+6. Iniciará Jenkins
 
 #### 3. Verificar que todo funciona
 
-Una vez completada la importación, verifica que los servicios estén corriendo:
+Una vez completada la importación, verifica que Jenkins esté corriendo:
 
 ```powershell
 docker ps
 ```
 
-Deberías ver 3 contenedores corriendo:
-- Jenkins (puertos 8080, 8081, 50000, 3000)
-- e4-backend (puerto 8082)
-- e4-frontend (puerto 3001)
+Deberías ver el contenedor de Jenkins corriendo con los puertos:
+- 8080 (Jenkins UI)
+- 8081 (Auxiliar)
+- 50000 (Agentes)
+- 3000 (Auxiliar)
 
 ---
 
-## 🌐 Acceder a los servicios
+## 🌐 Acceder a Jenkins
 
 Después de la importación exitosa:
 
-| Servicio | URL | Descripción |
-|----------|-----|-------------|
-| **Jenkins** | http://localhost:8080 | Panel de Jenkins con todos tus jobs |
-| **Backend API** | http://localhost:8082 | API REST del backend |
-| **Frontend** | http://localhost:3001 | Aplicación web de playlist de videos |
+**Jenkins:** http://localhost:8080
 
 ---
 
 ## 🔐 Datos preservados
 
-✅ **Jenkins:**
-- Todos los jobs y pipelines
-- Plugins instalados
-- Credenciales y configuración
-- Historial de builds
-
-✅ **Backend:**
-- Base de datos H2 completa
-- Usuarios registrados
-- Videos guardados
-- Likes y favoritos
-
-✅ **Frontend:**
-- Aplicación lista para usar
+✅ **Todos los jobs y pipelines**
+✅ **Plugins instalados**
+✅ **Credenciales y configuración**
+✅ **Historial de builds**
+✅ **Usuarios configurados**
+✅ **Configuración de Docker CLI**
+✅ **Acceso al Docker socket**
 
 ---
 
