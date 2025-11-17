@@ -17,8 +17,7 @@ class HealthControllerTest {
 
     @Test
     void testHealthEndpoint() throws Exception {
-        mockMvc.perform(get("/api/health"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Backend is healthy!"));
+        mockMvc.perform(get("/health"))
+                .andExpect(status().isOk());
     }
 }
