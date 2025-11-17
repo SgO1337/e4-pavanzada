@@ -11,8 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,8 +47,8 @@ class VideoServicioTest {
         videoMock.setDescripcion("Test description");
         videoMock.setUsuario(usuarioMock);
         videoMock.setLikes(0);
-        videoMock.setUsuariosLikes(new ArrayList<>());
-        videoMock.setUsuariosFavoritos(new ArrayList<>());
+        videoMock.setUsuariosLikes(new HashSet<>());
+        videoMock.setUsuariosFavoritos(new HashSet<>());
     }
 
     @Test
