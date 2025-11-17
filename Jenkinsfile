@@ -29,7 +29,7 @@ pipeline {
         
         stage('Build Backend') {
             steps {
-                echo 'Building Spring Boot backend...'
+                echo '🔨 Building Spring Boot backend...'
                 dir("${BACKEND_DIR}") {
                     script {
                         if (isUnix()) {
@@ -39,12 +39,48 @@ pipeline {
                         }
                     }
                 }
+                echo '✅ Backend build completed'
+            }
+        }
+        
+        stage('Test Backend') {
+            steps {
+                echo '🧪 ========================================='
+                echo '🧪 Running Backend Unit Tests...'
+                echo '🧪 ========================================='
+                dir("${BACKEND_DIR}") {
+                    script {
+                        if (isUnix()) {
+                            sh 'mvn test'
+                        } else {
+                            bat 'mvn test'
+                        }
+                    }
+                }
+                echo '✅ ========================================='
+                echo '✅ All Backend Tests Passed!'
+                echo '✅ ========================================='
+            }
+            post {
+                always {
+                    // Publicar resultados de tests
+                    junit "${BACKEND_DIR}/target/surefire-reports/*.xml"
+                }
+                success {
+                    echo '✅ Tests completed successfully - Proceeding to deployment'
+                }
+                failure {
+                    echo '❌ ========================================='
+                    echo '❌ TESTS FAILED - Deployment Cancelled!'
+                    echo '❌ Check test reports for details'
+                    echo '❌ ========================================='
+                }
             }
         }
         
         stage('Build Frontend') {
             steps {
-                echo 'Building Next.js frontend...'
+                echo '🎨 Building Next.js frontend...'
                 dir("${FRONTEND_DIR}") {
                     script {
                         if (isUnix()) {
@@ -58,61 +94,75 @@ pipeline {
                         }
                     }
                 }
+                echo '✅ Frontend build completed'
             }
         }
         
         stage('Build Backend Docker Image') {
             steps {
-                echo 'Building backend Docker image...'
+                echo '🐳 Building backend Docker image...'
                 dir("${BACKEND_DIR}") {
                     script {
                         sh "docker build -t e4-backend:latest ."
                     }
                 }
+                echo '✅ Backend Docker image built successfully'
             }
         }
         stage('Deploy Backend Container') {
             steps {
-                echo 'Deploying backend Docker container...'
+                echo '🚀 Deploying backend Docker container...'
                 script {
                     sh "docker rm -f e4-backend || true"
                     sh "docker run -d --name e4-backend -p ${BACKEND_PORT}:8081 e4-backend:latest"
                 }
+                echo '✅ Backend container deployed on port ${BACKEND_PORT}'
             }
         }
         
         stage('Build Frontend Docker Image') {
             steps {
-                echo 'Building frontend Docker image...'
+                echo '🐳 Building frontend Docker image...'
                 dir("${FRONTEND_DIR}") {
                     script {
                         sh "docker build -t e4-frontend:latest ."
                     }
                 }
+                echo '✅ Frontend Docker image built successfully'
             }
         }
         stage('Deploy Frontend Container') {
             steps {
-                echo 'Deploying frontend Docker container...'
+                echo '🚀 Deploying frontend Docker container...'
                 script {
                     sh "docker rm -f e4-frontend || true"
                     sh "docker run -d --name e4-frontend -p ${FRONTEND_PORT}:3000 e4-frontend:latest"
                 }
+                echo '✅ Frontend container deployed on port ${FRONTEND_PORT}'
             }
         }
     }
     
     post {
         success {
-            echo 'Pipeline completed successfully!'
-            echo "Backend is running on http://localhost:${BACKEND_PORT}"
-            echo "Frontend is running on http://localhost:${FRONTEND_PORT}"
+            echo '========================================='
+            echo '🎉 Pipeline completed successfully!'
+            echo '✅ All tests passed!'
+            echo "🌐 Backend is running on http://localhost:${BACKEND_PORT}"
+            echo "🌐 Frontend is running on http://localhost:${FRONTEND_PORT}"
+            echo '========================================='
             // Archive build artifacts so Jenkins keeps them with the run
             archiveArtifacts artifacts: "${BACKEND_DIR}/target/*.jar", fingerprint: true
             archiveArtifacts artifacts: "${FRONTEND_DIR}/.next/**", allowEmptyArchive: true, fingerprint: true
         }
         failure {
-            echo 'Pipeline failed!'
+            echo '========================================='
+            echo '❌ Pipeline failed!'
+            echo '❌ Check test results or build logs for details'
+            echo '========================================='
+        }
+        always {
+            echo 'Cleaning up workspace...'
         }
     }
 }
