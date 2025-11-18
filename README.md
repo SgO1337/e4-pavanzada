@@ -1,2 +1,3 @@
 # Entregable 4 Programación Avanzada
-En este proyecto 
+En este proyecto se implementa una aplicacion de playlist basica con Java Spring Boot y NextJS.
+Se realiza CI/CD con una pipeline implementada en Jenkins. Ademas de configurarla con Git SCM, se deberan instalar los plugins de Maven y NodeJS en Jenkins para que funcione, y configurar un webhook en github con el endpoint de jenkins para webhook y exponer el Jenkins con un tunel con ngrok.

@@ -38,14 +38,11 @@ class UsuarioServicioTest {
 
     @Test
     void testRegistrarUsuarioExitoso() {
-        // Given
         when(usuarioRepositorio.existsByNombreUsuario(anyString())).thenReturn(false);
         when(usuarioRepositorio.save(any(Usuario.class))).thenReturn(usuarioMock);
 
-        // When
         Usuario resultado = usuarioServicio.registrar("testuser", "password123", "Test User");
 
-        // Then
         assertNotNull(resultado);
         assertEquals("testuser", resultado.getNombreUsuario());
         assertEquals("Test User", resultado.getNombre());
@@ -55,10 +52,8 @@ class UsuarioServicioTest {
 
     @Test
     void testRegistrarUsuarioDuplicado() {
-        // Given
         when(usuarioRepositorio.existsByNombreUsuario("testuser")).thenReturn(true);
 
-        // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             usuarioServicio.registrar("testuser", "password123", "Test User");
         });
@@ -70,13 +65,10 @@ class UsuarioServicioTest {
 
     @Test
     void testLoginExitoso() {
-        // Given
         when(usuarioRepositorio.findByNombreUsuario("testuser")).thenReturn(Optional.of(usuarioMock));
 
-        // When
         Optional<Usuario> resultado = usuarioServicio.login("testuser", "password123");
 
-        // Then
         assertTrue(resultado.isPresent());
         assertEquals("testuser", resultado.get().getNombreUsuario());
         verify(usuarioRepositorio).findByNombreUsuario("testuser");
@@ -84,39 +76,31 @@ class UsuarioServicioTest {
 
     @Test
     void testLoginConContrasenaIncorrecta() {
-        // Given
         when(usuarioRepositorio.findByNombreUsuario("testuser")).thenReturn(Optional.of(usuarioMock));
 
-        // When
         Optional<Usuario> resultado = usuarioServicio.login("testuser", "wrongpassword");
 
-        // Then
         assertFalse(resultado.isPresent());
         verify(usuarioRepositorio).findByNombreUsuario("testuser");
     }
 
     @Test
     void testLoginConUsuarioInexistente() {
-        // Given
         when(usuarioRepositorio.findByNombreUsuario("noexiste")).thenReturn(Optional.empty());
 
-        // When
         Optional<Usuario> resultado = usuarioServicio.login("noexiste", "password123");
-
-        // Then
         assertFalse(resultado.isPresent());
         verify(usuarioRepositorio).findByNombreUsuario("noexiste");
     }
 
     @Test
     void testObtenerPorId() {
-        // Given
+
         when(usuarioRepositorio.findById(1L)).thenReturn(Optional.of(usuarioMock));
 
-        // When
+
         Optional<Usuario> resultado = usuarioServicio.obtenerPorId(1L);
 
-        // Then
         assertTrue(resultado.isPresent());
         assertEquals(1L, resultado.get().getId());
         verify(usuarioRepositorio).findById(1L);

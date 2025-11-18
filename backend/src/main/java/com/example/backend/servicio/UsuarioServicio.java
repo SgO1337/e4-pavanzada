@@ -20,7 +20,7 @@ public class UsuarioServicio {
         
         Usuario usuario = new Usuario();
         usuario.setNombreUsuario(nombreUsuario);
-        usuario.setContrasena(contrasena); // En producción, usar encriptación
+        usuario.setContrasena(contrasena);
         usuario.setNombre(nombre);
         
         return usuarioRepositorio.save(usuario);

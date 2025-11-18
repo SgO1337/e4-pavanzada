@@ -53,10 +53,8 @@ class VideoServicioTest {
 
     @Test
     void testAgregarVideo() {
-        // Given
         when(videoRepositorio.save(any(Video.class))).thenReturn(videoMock);
 
-        // When
         Video resultado = videoServicio.agregarVideo(
             "Test Video",
             "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
@@ -64,7 +62,6 @@ class VideoServicioTest {
             usuarioMock
         );
 
-        // Then
         assertNotNull(resultado);
         assertEquals("Test Video", resultado.getTitulo());
         assertEquals("dQw4w9WgXcQ", resultado.getYoutubeId());
@@ -73,10 +70,8 @@ class VideoServicioTest {
 
     @Test
     void testExtraerYouTubeIdFormatoWatch() {
-        // Given
         when(videoRepositorio.save(any(Video.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // When
         Video resultado = videoServicio.agregarVideo(
             "Test",
             "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
@@ -84,16 +79,13 @@ class VideoServicioTest {
             usuarioMock
         );
 
-        // Then
         assertEquals("dQw4w9WgXcQ", resultado.getYoutubeId());
     }
 
     @Test
     void testExtraerYouTubeIdFormatoCorto() {
-        // Given
         when(videoRepositorio.save(any(Video.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // When
         Video resultado = videoServicio.agregarVideo(
             "Test",
             "https://youtu.be/dQw4w9WgXcQ",
@@ -101,20 +93,16 @@ class VideoServicioTest {
             usuarioMock
         );
 
-        // Then
         assertEquals("dQw4w9WgXcQ", resultado.getYoutubeId());
     }
 
     @Test
     void testObtenerTodos() {
-        // Given
         List<Video> videos = Arrays.asList(videoMock);
         when(videoRepositorio.findAllByOrderByFechaCreacionDesc()).thenReturn(videos);
 
-        // When
         List<VideoResponse> resultado = videoServicio.obtenerTodos(1L);
 
-        // Then
         assertNotNull(resultado);
         assertEquals(1, resultado.size());
         assertEquals("Test Video", resultado.get(0).getTitulo());
@@ -123,14 +111,11 @@ class VideoServicioTest {
 
     @Test
     void testDarLikeNuevo() {
-        // Given
         when(videoRepositorio.findById(1L)).thenReturn(Optional.of(videoMock));
         when(videoRepositorio.save(any(Video.class))).thenReturn(videoMock);
 
-        // When
         Video resultado = videoServicio.darLike(1L, 2L);
 
-        // Then
         assertEquals(1, resultado.getLikes());
         assertTrue(resultado.getUsuariosLikes().contains(2L));
         verify(videoRepositorio).save(videoMock);
@@ -138,16 +123,13 @@ class VideoServicioTest {
 
     @Test
     void testQuitarLike() {
-        // Given
         videoMock.getUsuariosLikes().add(2L);
         videoMock.setLikes(1);
         when(videoRepositorio.findById(1L)).thenReturn(Optional.of(videoMock));
         when(videoRepositorio.save(any(Video.class))).thenReturn(videoMock);
 
-        // When
         Video resultado = videoServicio.darLike(1L, 2L);
 
-        // Then
         assertEquals(0, resultado.getLikes());
         assertFalse(resultado.getUsuariosLikes().contains(2L));
         verify(videoRepositorio).save(videoMock);
@@ -155,37 +137,29 @@ class VideoServicioTest {
 
     @Test
     void testMarcarFavorito() {
-        // Given
         when(videoRepositorio.findById(1L)).thenReturn(Optional.of(videoMock));
         when(videoRepositorio.save(any(Video.class))).thenReturn(videoMock);
 
-        // When
         Video resultado = videoServicio.marcarFavorito(1L, 2L);
 
-        // Then
         assertTrue(resultado.getUsuariosFavoritos().contains(2L));
         verify(videoRepositorio).save(videoMock);
     }
 
     @Test
     void testEliminarVideoExitoso() {
-        // Given
         when(videoRepositorio.findById(1L)).thenReturn(Optional.of(videoMock));
         doNothing().when(videoRepositorio).delete(videoMock);
 
-        // When
         videoServicio.eliminarVideo(1L, 1L);
 
-        // Then
         verify(videoRepositorio).delete(videoMock);
     }
 
     @Test
     void testEliminarVideoSinPermiso() {
-        // Given
         when(videoRepositorio.findById(1L)).thenReturn(Optional.of(videoMock));
 
-        // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             videoServicio.eliminarVideo(1L, 999L);
         });
@@ -196,10 +170,8 @@ class VideoServicioTest {
 
     @Test
     void testEliminarVideoNoEncontrado() {
-        // Given
         when(videoRepositorio.findById(999L)).thenReturn(Optional.empty());
 
-        // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             videoServicio.eliminarVideo(999L, 1L);
         });

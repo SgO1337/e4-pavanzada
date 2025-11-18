@@ -64,11 +64,9 @@ public class VideoServicio {
             .orElseThrow(() -> new RuntimeException("Video no encontrado"));
         
         if (video.getUsuariosLikes().contains(usuarioId)) {
-            // Quitar like
             video.getUsuariosLikes().remove(usuarioId);
             video.setLikes(video.getLikes() - 1);
         } else {
-            // Agregar like
             video.getUsuariosLikes().add(usuarioId);
             video.setLikes(video.getLikes() + 1);
         }
@@ -81,10 +79,8 @@ public class VideoServicio {
             .orElseThrow(() -> new RuntimeException("Video no encontrado"));
         
         if (video.getUsuariosFavoritos().contains(usuarioId)) {
-            // Quitar de favoritos
             video.getUsuariosFavoritos().remove(usuarioId);
         } else {
-            // Agregar a favoritos
             video.getUsuariosFavoritos().add(usuarioId);
         }
         
@@ -92,7 +88,6 @@ public class VideoServicio {
     }
     
     private String extraerYouTubeId(String url) {
-        // Patrones para diferentes formatos de URLs de YouTube
         String[] patterns = {
             "(?<=watch\\?v=)[^&]+",
             "(?<=youtu.be/)[^?]+",
